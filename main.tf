@@ -22,6 +22,7 @@ provider "aws" {
   secret_key = "uuIl8NxNJAFVu7/VXLYKH0zmhrFXoRn9APXB8I6r"
 }
 
+
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
 }
