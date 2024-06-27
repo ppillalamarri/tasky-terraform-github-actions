@@ -29,7 +29,7 @@ resource "aws_vpc" "main" {
 resource "aws_subnet" "eks_subnet_a" {
   vpc_id     = aws_vpc.eks_vpc.id
   cidr_block = "10.0.1.0/24"
-  availability_zone = "us-west-2a"
+  availability_zone = "us-west-1a"
   tags = {
     Name = "eks_subnet_a"
   }
@@ -38,7 +38,7 @@ resource "aws_subnet" "eks_subnet_a" {
 resource "aws_subnet" "eks_subnet_b" {
   vpc_id     = aws_vpc.eks_vpc.id
   cidr_block = "10.0.2.0/24"
-  availability_zone = "us-west-2b"
+  availability_zone = "us-west-1b"
   tags = {
     Name = "eks_subnet_b"
   }
