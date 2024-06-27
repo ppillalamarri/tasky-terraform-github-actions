@@ -14,8 +14,6 @@ terraform {
   required_version = ">= 1.1.0"
 }
 
-#Database Server Configuration
-# Create a Linux EC2 instance on which a database server is installed (e.g. MongoDB)
 provider "aws" {
   region = "eu-west-1"
   access_key = "AKIARATHADOVEYTEQYWI"
