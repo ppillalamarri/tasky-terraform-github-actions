@@ -87,25 +87,7 @@ module "wizdemoeks"  {
   source          = "terraform-aws-modules/eks/aws"
   cluster_name    = "wizdemoeks-cluster"
   cluster_version = "1.21"
-  subnets         = [aws_subnet.eks_subnet_a.id, 
-                        aws_subnet.eks_subnet_b.id]
   vpc_id          = aws_vpc.eks_vpc.id
-
-  node_groups = {
-    eks_nodes = {
-      desired_capacity = 2
-      max_capacity     = 3
-      min_capacity     = 1
-
-      instance_type = "t2.micro"
-
-      key_name = "existing_wizdemokeypair"  # Ensure you have a valid EC2 key pair
-
-      additional_tags = {
-        Name = "eks_nodes"
-      }
-    }
-  }
 }
 
 data "aws_iam_policy_document" "eks_assume_role_policy" {
