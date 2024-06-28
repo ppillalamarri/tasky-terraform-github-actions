@@ -84,11 +84,12 @@ resource "aws_route_table_association" "b" {
   route_table_id = aws_route_table.eks_route_table.id
 }
 
-module "eks" {
+resource "eks" "wizdemoeks" {
   source          = "terraform-aws-modules/eks/aws"
   cluster_name    = "my-eks-cluster"
   cluster_version = "1.21"
-  subnets         = [aws_subnet.eks_subnet_a.id, aws_subnet.eks_subnet_b.id]
+  subnets         = [aws_subnet.eks_subnet_a.id, 
+                        aws_subnet.eks_subnet_b.id]
   vpc_id          = aws_vpc.eks_vpc.id
 
   node_groups = {
