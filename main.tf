@@ -153,8 +153,6 @@ resource "aws_ecr_repository" "app_ecr_repo" {
   name = "app-repo"
 }
 
-
-
 resource "aws_ecr_lifecycle_policy" "default_policy" {
   repository = aws_ecr_repository.app_ecr_repo.name
 	
