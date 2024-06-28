@@ -209,7 +209,7 @@ provider "kubernetes" {
 }
 
 data "aws_eks_cluster_auth" "eks_cluster_auth" {
-  name = aws_eks_cluster.eks.name
+  name = aws_eks_cluster.eks_cluster.name
 }
 
 resource "kubernetes_namespace" "app_namespace" {
