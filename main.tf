@@ -9,6 +9,7 @@
 #TODO Configure your EKS cluster to grant cluster-admin privileges to your web application container(s)
 #TODO Allow public internet traffic to your web application using service type loadbalancer
 
+
 terraform {
   required_providers {
     aws = {
