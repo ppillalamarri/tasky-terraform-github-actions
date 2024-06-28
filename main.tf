@@ -1,6 +1,7 @@
 #Create an EKS cluster instance in the same VPC as your database server
 #Ensure your built container image contains an arbitrary file called wizexercise.txt with some content
 
+
 #Build and host a container image for your web application
 
 #Deploy your container-based web application to the EKS cluster
