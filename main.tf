@@ -165,11 +165,11 @@ resource "aws_ecr_lifecycle_policy" "default_policy" {
 	    "rules": [
 	        {
 	            "rulePriority": 1,
-	            "description": "Keep only the last ${var.untagged_images} untagged images.",
+	            "description": "Keep only the last 1 untagged images.",
 	            "selection": {
 	                "tagStatus": "untagged",
 	                "countType": "imageCountMoreThan",
-	                "countNumber": ${var.untagged_images}
+	                "countNumber": 1
 	            },
 	            "action": {
 	                "type": "expire"
