@@ -174,6 +174,28 @@ output "cluster_endpoint" {
   value       = module.eks.cluster_endpoint
 }
 
+resource "aws_ecr_repository" "my_repo" {
+  name = "my_repo"
+}
+
+provider "docker" {
+  host = "unix:///var/run/docker.sock"
+}
+
+data "aws_ecr_authorization_token" "auth" {}
+
+resource "docker_registry_image" "my_image" {
+  name = "${aws_ecr_repository.my_repo.repository_url}:latest"
+  build {
+    path = "${path.module}/path/to/your/dockerfile"
+  }
+  push {
+    name     = "${aws_ecr_repository.my_repo.repository_url}:latest"
+    username = data.aws_ecr_authorization_token.auth.user_name
+    password = data.aws_ecr_authorization_token.auth.password
+  }
+}
+
 output "cluster_security_group_id" {
   description = "EKS cluster security group ID"
   value       = module.eks.cluster_security_group_id
