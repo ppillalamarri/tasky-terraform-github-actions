@@ -181,7 +181,7 @@ resource "null_resource" "docker_packaging" {
 	
 	  provisioner "local-exec" {
 	    command = <<EOF
-	    sudo yum install docker
+	    yum install docker
             aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin "070009232298.dkr.ecr.eu-west-1.amazonaws.com"
 	    docker build -t "${aws_ecr_repository.app_ecr_repo.repository_url}:latest" -f ./Dockerfile .
 	    docker push "${aws_ecr_repository.app_ecr_repo.repository_url}:latest"
@@ -209,7 +209,7 @@ provider "kubernetes" {
 }
 
 data "aws_eks_cluster_auth" "eks_cluster_auth" {
-  name = aws_eks_cluster.eks_cluster.name
+  name = aws_eks_cluster.eks.name
 }
 
 resource "kubernetes_namespace" "app_namespace" {
