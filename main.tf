@@ -54,14 +54,14 @@ resource "aws_subnet" "eks_subnet_b" {
 }
 
 resource "aws_internet_gateway" "eks_igw" {
-  vpc_id = aws_vpc.eks_vpc.id
+  vpc_id = aws_vpc.main.id
   tags = {
     Name = "eks_igw"
   }
 }
 
 resource "aws_route_table" "eks_route_table" {
-  vpc_id = aws_vpc.eks_vpc.id
+  vpc_id = aws_vpc.main.id
 
   route {
     cidr_block = "0.0.0.0/0"
