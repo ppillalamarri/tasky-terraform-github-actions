@@ -197,7 +197,7 @@ resource "null_resource" "docker_packaging" {
 	
 
 	  depends_on = [
-	    aws_ecr_repository.noiselesstech,
+	    aws_ecr_repository.app_ecr_repo
 	  ]
 }
 
