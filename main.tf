@@ -11,6 +11,7 @@
 #TODO Allow public internet traffic to your web application using service type loadbalancer
 
 
+
 terraform {
   required_providers {
     aws = {
