@@ -61,7 +61,7 @@ locals {
   subnets_ids         = concat(local.public_subnets_ids, local.private_subnets_ids)
 }
 
-
+# EKS CLUSTERS
 
 ################
 #  EKS MODULE  #
@@ -200,6 +200,83 @@ resource "null_resource" "docker_packaging" {
 	    aws_ecr_repository.app_ecr_repo
 	  ]
 }
+
+# deploy container-based web application to the EKS cluster
+# kubernetes.tf
+
+provider "kubernetes" {
+  host                   = aws_eks_cluster.eks_cluster.endpoint
+  cluster_ca_certificate = base64decode(aws_eks_cluster.eks_cluster.certificate_authority.0.data)
+  token                  = data.aws_eks_cluster_auth.eks_cluster_auth.token
+}
+
+data "aws_eks_cluster_auth" "eks_cluster_auth" {
+  name = aws_eks_cluster.eks_cluster.name
+}
+
+resource "kubernetes_namespace" "app_namespace" {
+  metadata {
+    name = "my-app"
+  }
+}
+
+resource "kubernetes_deployment" "app_deployment" {
+  metadata {
+    name      = "my-app"
+    namespace = kubernetes_namespace.app_namespace.metadata[0].name
+  }
+
+  spec {
+    replicas = 2
+
+    selector {
+      match_labels = {
+        app = "my-app"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          app = "my-app"
+        }
+      }
+
+      spec {
+        container {
+          name  = "my-app"
+          image = "nginx:latest"
+
+          ports {
+            container_port = 80
+          }
+        }
+      }
+    }
+  }
+}
+
+resource "kubernetes_service" "app_service" {
+  metadata {
+    name      = "my-app"
+    namespace = kubernetes_namespace.app_namespace.metadata[0].name
+  }
+
+  spec {
+    selector = {
+      app = "my-app"
+    }
+
+    port {
+      port        = 80
+      target_port = 80
+    }
+
+    type = "LoadBalancer"
+  }
+}
+
+
 
 resource "aws_iam_role" "eks_role" {
   name               = "eks-cluster-role"
