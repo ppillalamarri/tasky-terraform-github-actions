@@ -83,11 +83,11 @@ resource "aws_route_table_association" "b" {
   route_table_id = aws_route_table.eks_route_table.id
 }
 
-module "wizdemoeks"  {
+module "eks"  {
   source          = "terraform-aws-modules/eks/aws"
   cluster_name    = "wizdemoeks-cluster"
   cluster_version = "1.21"
-  vpc_id          = aws_vpc.eks_vpc.id
+  vpc_id          = aws_vpc.main.id
 }
 
 data "aws_iam_policy_document" "eks_assume_role_policy" {
