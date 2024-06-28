@@ -83,8 +83,7 @@ resource "aws_route_table_association" "b" {
   route_table_id = aws_route_table.eks_route_table.id
 }
 
-
-resource "eks" "wizdemoeks" {
+module "eks" "wizdemoeks" {
   source          = "terraform-aws-modules/eks/aws"
   cluster_name    = "wizdemoeks-cluster"
   cluster_version = "1.21"
