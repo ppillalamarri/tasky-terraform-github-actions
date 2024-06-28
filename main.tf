@@ -9,3 +9,17 @@
 
 #TODO Ensure your web application authenticates to your database server (connection strings are a common approach)
 #TODO Allow public internet traffic to your web application using service type loadbalancer
+
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "5.40.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "3.4.3"
+    }
+  }
+  required_version = ">= 1.1.0"
+}
