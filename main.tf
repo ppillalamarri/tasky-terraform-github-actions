@@ -30,23 +30,24 @@ provider "aws" {
   secret_key = "uuIl8NxNJAFVu7/VXLYKH0zmhrFXoRn9APXB8I6r"
 }
 
-
-data "aws_availability_zones" "available" {}
-
-data "aws_eks_cluster" "cluster" {
-  name = module.eks.cluster_id
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
 }
 
-data "aws_eks_cluster_auth" "cluster" {
-  name = module.eks.cluster_id
+resource "aws_subnet" "eks_subnet_a" {
+  vpc_id     = aws_vpc.eks_vpc.id
+  cidr_block = "10.0.1.0/24"
+  availability_zone = "us-west-1a"
+  tags = {
+    Name = "eks_subnet_a"
+  }
 }
 
-locals {
-  cluster_name = "wizdemocluster"
-}
-
-provider "kubernetes" {
-  host                   = data.aws_eks_cluster.cluster.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
-  token                  = data.aws_eks_cluster_auth.cluster.token
+resource "aws_subnet" "eks_subnet_b" {
+  vpc_id     = aws_vpc.eks_vpc.id
+  cidr_block = "10.0.2.0/24"
+  availability_zone = "us-west-1b"
+  tags = {
+    Name = "eks_subnet_b"
+  }
 }
