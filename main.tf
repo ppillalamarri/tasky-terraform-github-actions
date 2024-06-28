@@ -149,6 +149,58 @@ module "vpc_cni_irsa" {
   }
 }
 
+# Create an ECR repository
+resource "aws_ecr_repository" "app_ecr_repo" {
+  name = "app-repo"
+}
+
+
+
+resource "aws_ecr_lifecycle_policy" "default_policy" {
+  repository = aws_ecr_repository.noiselesstech.name
+	
+
+	  policy = <<EOF
+	{
+	    "rules": [
+	        {
+	            "rulePriority": 1,
+	            "description": "Keep only the last ${var.untagged_images} untagged images.",
+	            "selection": {
+	                "tagStatus": "untagged",
+	                "countType": "imageCountMoreThan",
+	                "countNumber": ${var.untagged_images}
+	            },
+	            "action": {
+	                "type": "expire"
+	            }
+	        }
+	    ]
+	}
+	EOF
+}
+
+resource "null_resource" "docker_packaging" {
+	
+	  provisioner "local-exec" {
+	    command = <<EOF
+	    aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin ${data.aws_caller_identity.current.account_id}.dkr.ecr.eu-west-1.amazonaws.com
+	    docker build -t "${aws_ecr_repository.app_ecr_repo.repository_url}:latest" -f ./Dockerfile .
+	    docker push "${aws_ecr_repository.app_ecr_repo.repository_url}:latest"
+	    EOF
+	  }
+	
+
+	  triggers = {
+	    "run_at" = timestamp()
+	  }
+	
+
+	  depends_on = [
+	    aws_ecr_repository.noiselesstech,
+	  ]
+}
+
 resource "aws_iam_role" "eks_role" {
   name               = "eks-cluster-role"
   assume_role_policy = data.aws_iam_policy_document.eks_assume_role_policy.json
@@ -172,28 +224,6 @@ output "cluster_id" {
 output "cluster_endpoint" {
   description = "EKS cluster endpoint"
   value       = module.eks.cluster_endpoint
-}
-
-resource "aws_ecr_repository" "my_repo" {
-  name = "my_repo"
-}
-
-provider "docker" {
-  host = "unix:///var/run/docker.sock"
-}
-
-data "aws_ecr_authorization_token" "auth" {}
-
-resource "docker_registry_image" "my_image" {
-  name = "${aws_ecr_repository.my_repo.repository_url}:latest"
-  build {
-    path = "${path.module}/path/to/your/dockerfile"
-  }
-  push {
-    name     = "${aws_ecr_repository.my_repo.repository_url}:latest"
-    username = data.aws_ecr_authorization_token.auth.user_name
-    password = data.aws_ecr_authorization_token.auth.password
-  }
 }
 
 output "cluster_security_group_id" {
