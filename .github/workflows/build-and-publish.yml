@@ -5,7 +5,7 @@ on:
 
 env:
   TF_CLOUD_ORGANIZATION: "pillalamarri"
-  TF_API_TOKEN: "y6DdEyP9xaGRtw.atlasv1.iTzCTjrAXBn91G9TwLJyr46nEg6tHbnBnMyzO2wd9aDQ7bGPMznrAE37qnqLG4iTdGk"
+  TF_API_TOKEN: "ukyMC8XcfqpDww.atlasv1.zGJuW4KrUY7qAHCjFrghCQDly86HLQrAAanPky2vjjHpv5zJ9yxROootzPl2QrEkUJU"
   TF_WORKSPACE: "tasky-webapp-actions"
   CONFIG_DIRECTORY: "./"
 
