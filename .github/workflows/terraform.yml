@@ -143,6 +143,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: output
+            });
             
     - name: Create Apply Run
       uses: hashicorp/tfc-workflows-github/actions/create-run@v1.0.0
@@ -161,4 +162,4 @@ jobs:
 
 
               
-            });
+            
