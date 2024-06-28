@@ -83,3 +83,69 @@ resource "aws_route_table_association" "b" {
   route_table_id = aws_route_table.eks_route_table.id
 }
 
+
+resource "eks" "wizdemoeks" {
+  source          = "terraform-aws-modules/eks/aws"
+  cluster_name    = "wizdemoeks-cluster"
+  cluster_version = "1.21"
+  subnets         = [aws_subnet.eks_subnet_a.id, 
+                        aws_subnet.eks_subnet_b.id]
+  vpc_id          = aws_vpc.eks_vpc.id
+
+  node_groups = {
+    eks_nodes = {
+      desired_capacity = 2
+      max_capacity     = 3
+      min_capacity     = 1
+
+      instance_type = "t2.micro"
+
+      key_name = "existing_wizdemokeypair"  # Ensure you have a valid EC2 key pair
+
+      additional_tags = {
+        Name = "eks_nodes"
+      }
+    }
+  }
+}
+
+data "aws_iam_policy_document" "eks_assume_role_policy" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["eks.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "eks_role" {
+  name               = "eks-cluster-role"
+  assume_role_policy = data.aws_iam_policy_document.eks_assume_role_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+  role       = aws_iam_role.eks_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "eks_service_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
+  role       = aws_iam_role.eks_role.name
+}
+
+output "cluster_id" {
+  description = "EKS cluster ID"
+  value       = module.eks.cluster_id
+}
+
+output "cluster_endpoint" {
+  description = "EKS cluster endpoint"
+  value       = module.eks.cluster_endpoint
+}
+
+output "cluster_security_group_id" {
+  description = "EKS cluster security group ID"
+  value       = module.eks.cluster_security_group_id
+}
