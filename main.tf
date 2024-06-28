@@ -176,7 +176,6 @@ resource "aws_ecr_lifecycle_policy" "default_policy" {
 	EOF
 }
 
-
 # Checks if build folder has changed
 data "external" "build_dir" {
   program = ["bash", "${path.module}/dir_md5.sh", var.dockerfile_dir]
