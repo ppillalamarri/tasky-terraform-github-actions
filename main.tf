@@ -1,6 +1,5 @@
 #Create an EKS cluster instance in the same VPC as your database server
 
-
 terraform {
   required_providers {
     aws = {
