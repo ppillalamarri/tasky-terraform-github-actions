@@ -177,30 +177,6 @@ resource "aws_ecr_lifecycle_policy" "default_policy" {
 	EOF
 }
 
-resource "null_resource" "docker_packaging" {
-	
-	  provisioner "local-exec" {
-	    command = <<EOF
-	    yum install docker
-            aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin "070009232298.dkr.ecr.eu-west-1.amazonaws.com"
-	    docker build -t "${aws_ecr_repository.app_ecr_repo.repository_url}:latest" -f ./Dockerfile .
-	    docker push "${aws_ecr_repository.app_ecr_repo.repository_url}:latest"
-	    EOF
-	  }
-	
-
-	  triggers = {
-	    "run_at" = timestamp()
-	  }
-	
-
-	  depends_on = [
-	    aws_ecr_repository.app_ecr_repo
-	  ]
-}
-
-
-
 resource "aws_iam_role" "eks_role" {
   name               = "eks-cluster-role"
   assume_role_policy = data.aws_iam_policy_document.eks_assume_role_policy.json
