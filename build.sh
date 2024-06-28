@@ -1,18 +1,28 @@
+#!/bin/bash
 
+# Inspiration from https://github.com/onnimonni/terraform-ecr-docker-build-module
 
-# Checks if build folder has changed
-data "external" "build_dir" {
-  program = ["bash", "${path.module}/dir_md5.sh", var.dockerfile_dir]
-}
+# Fail fast
+set -e
 
-# Builds test-service and pushes it into aws_ecr_repository
-resource "null_resource" "ecr_image" {
-  triggers = {
-    build_folder_content_md5 = data.external.build_dir.result.md5
-  }
+# This is the order of arguments
+build_folder=$1
+aws_ecr_repository_url_with_tag=$2
 
-  # Runs the build.sh script which builds the dockerfile and pushes to ecr
-  provisioner "local-exec" {
-    command = "bash ${path.module}/build.sh ${var.dockerfile_dir} ${var.ecr_repository_url}:${var.docker_image_tag}"
-  }
-}
+# Check that aws is installed
+which aws > /dev/null || { echo 'ERROR: aws-cli is not installed' ; exit 1; }
+
+# Connect into aws
+$(aws ecr get-login --no-include-email) || { echo 'ERROR: aws ecr login failed' ; exit 1; }
+
+# Check that docker is installed and running
+which docker > /dev/null && docker ps > /dev/null || { echo 'ERROR: docker is not running' ; exit 1; }
+
+# Some Useful Debug
+echo "Building $aws_ecr_repository_url_with_tag from $build_folder/Dockerfile"
+
+# Build image
+docker build -t $aws_ecr_repository_url_with_tag $build_folder
+
+# Push image
+docker push $aws_ecr_repository_url_with_tag
