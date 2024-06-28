@@ -1,4 +1,15 @@
 #Create an EKS cluster instance in the same VPC as your database server
+#Ensure your built container image contains an arbitrary file called “wizexercise.txt” with some content
+
+#Build and host a container image for your web application*
+
+#Deploy your container-based web application to the EKS cluster
+
+#TODO Configure your EKS cluster to grant cluster-admin privileges to your web application container(s)
+
+#TODO Ensure your web application authenticates to your database server (connection strings are a common approach)
+#TODO Allow public internet traffic to your web application using service type loadbalancer
+
 
 terraform {
   required_providers {
@@ -137,14 +148,3 @@ output "cluster_security_group_id" {
   description = "EKS cluster security group ID"
   value       = module.eks.cluster_security_group_id
 }
-#Ensure your built container image contains an arbitrary file called “wizexercise.txt” with some content
-
-#Build and host a container image for your web application*
-
-#Deploy your container-based web application to the EKS cluster
-
-#TODO Configure your EKS cluster to grant cluster-admin privileges to your web application container(s)
-
-#TODO Ensure your web application authenticates to your database server (connection strings are a common approach)
-#TODO Allow public internet traffic to your web application using service type loadbalancer
-
