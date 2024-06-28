@@ -5,9 +5,8 @@
 
 #Deploy your container-based web application to the EKS cluster
 
+#TODO Node instances to be associated with existing pem keyfile and open SSH port
 #TODO Configure your EKS cluster to grant cluster-admin privileges to your web application container(s)
-
-#TODO Ensure your web application authenticates to your database server (connection strings are a common approach)
 #TODO Allow public internet traffic to your web application using service type loadbalancer
 
 
