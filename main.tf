@@ -212,7 +212,7 @@ resource "kubernetes_deployment" "tasky-webapp" {
           name  = "tasky-webapp"
 
           port {
-            container_port = 80
+            container_port = 8081
           }
         }
       }
@@ -231,7 +231,7 @@ resource "kubernetes_service" "tasky-webapp" {
     }
 
     port {
-      port        = 80
+      port        = 8081
       target_port = 80
     }
 
