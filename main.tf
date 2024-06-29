@@ -182,11 +182,11 @@ provider "kubernetes" {
   config_context = "aws"
 }
 
-resource "kubernetes_deployment" "my_app" {
+resource "kubernetes_deployment" "tasky-webapp" {
   metadata {
-    name = "my-app"
+    name = "tasky-webapp"
     labels = {
-      app = "my-app"
+      app = "tasky-webapp"
     }
   }
 
@@ -195,14 +195,14 @@ resource "kubernetes_deployment" "my_app" {
 
     selector {
       match_labels = {
-        app = "my-app"
+        app = "tasky-webapp"
       }
     }
 
     template {
       metadata {
         labels = {
-          app = "my-app"
+          app = "tasky-webapp"
         }
       }
 
