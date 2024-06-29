@@ -36,8 +36,12 @@ jobs:
             #ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
             ECR_REGISTRY : "app-repo"
             ECR_REPOSITORY : "taskywebapp"
-            IMAGE_TAG: ${{ steps.get-commit-hash.outputs.commit-hash }}-${{ steps.get-timestamp.outputs.timestamp }}
+            IMAGE_TAG : "taskywebapp_latest"
+            #IMAGE_TAG: ${{ steps.get-commit-hash.outputs.commit-hash }}-${{ steps.get-timestamp.outputs.timestamp }}
           run: |
+            #docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+            #docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
             docker build -t app-repo .
-            docker tag app-repo:latest 070009232298.dkr.ecr.eu-west-1.amazonaws.com/app-repo:latest
-            docker push 070009232298.dkr.ecr.eu-west-1.amazonaws.com/app-repo:latest
+            docker tag app-repo:latest 070009232298.dkr.ecr.eu-west-1.amazonaws.com/app-repo:taskywebapp_latest
+            docker push 070009232298.dkr.ecr.eu-west-1.amazonaws.com/app-repo:taskywebapp_latest
