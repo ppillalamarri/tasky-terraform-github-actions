@@ -177,6 +177,15 @@ resource "aws_ecr_lifecycle_policy" "default_policy" {
 	EOF
 }
 
+# Provision the Kubernetes cluster
+resource "null_resource" "provision_cluster" {
+  provisioner "local-exec" {
+     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+     chmod +x kubectl
+     mv kubectl /usr/local/bin/
+  }
+}
+
 provider "kubernetes" {
   config_path    = "~/.kube/config"
   config_context = "aws"
