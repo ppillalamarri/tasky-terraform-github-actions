@@ -32,8 +32,10 @@ jobs:
         - name: Build, tag, and push the image to Amazon ECR
           id: build-image
           env:
-            ECR_REGISTRY: ${{ secrets.REPO_REGISTRY }}
-            ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
+            #ECR_REGISTRY: ${{ secrets.REPO_REGISTRY }}
+            #ECR_REPOSITORY: ${{ secrets.REPO_NAME }}
+            ECR_REGISTRY : "https://eu-west-1.console.aws.amazon.com/ecr/repositories/private/070009232298/app-repo?region=eu-west-1"
+            ECR_REPOSITORY : "taskywebapp"
             IMAGE_TAG: ${{ steps.get-commit-hash.outputs.commit-hash }}-${{ steps.get-timestamp.outputs.timestamp }}
           run: |
             docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
