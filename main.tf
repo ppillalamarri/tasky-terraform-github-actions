@@ -177,20 +177,65 @@ resource "aws_ecr_lifecycle_policy" "default_policy" {
 	EOF
 }
 
-# Checks if build folder has changed
-data "external" "build_dir" {
-  program = ["bash", "${path.module}/dir_md5.sh", var.dockerfile_dir]
+provider "kubernetes" {
+  config_path    = "~/.kube/config"
+  config_context = "aws"
 }
 
-# Builds test-service and pushes it into aws_ecr_repository
-resource "null_resource" "ecr_image" {
-  triggers = {
-    build_folder_content_md5 = data.external.build_dir.result.md5
+resource "kubernetes_deployment" "my_app" {
+  metadata {
+    name = "my-app"
+    labels = {
+      app = "my-app"
+    }
   }
 
-  # Runs the build.sh script which builds the dockerfile and pushes to ecr
-  provisioner "local-exec" {
-    command = "bash ${path.module}/build.sh ${var.dockerfile_dir} ${var.ecr_repository_url}:${var.docker_image_tag}"
+  spec {
+    replicas = 2
+
+    selector {
+      match_labels = {
+        app = "my-app"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          app = "my-app"
+        }
+      }
+
+      spec {
+        container {
+          image = "070009232298.dkr.ecr.eu-west-1.amazonaws.com/tasky_webapp:latest"
+          name  = "tasky-webapp"
+
+          port {
+            container_port = 80
+          }
+        }
+      }
+    }
+  }
+}
+
+resource "kubernetes_service" "tasky-webapp" {
+  metadata {
+    name = "tasky-webapp"
+  }
+
+  spec {
+    selector = {
+      app = "tasky-webapp"
+    }
+
+    port {
+      port        = 80
+      target_port = 80
+    }
+
+    type = "LoadBalancer"
   }
 }
 
