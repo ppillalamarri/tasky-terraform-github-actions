@@ -15,7 +15,6 @@ resource "aws_eks_cluster" "example" {
   }
 }
 
-
 # IAM Role for EKS Cluster
 resource "aws_iam_role" "eks_cluster" {
   name = "eks-cluster-role"
