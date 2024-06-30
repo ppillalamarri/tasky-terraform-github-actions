@@ -83,13 +83,13 @@ provider "kubernetes" {
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   cluster_name    = "wiz-cluster"
-  cluster_version = "1.20"
+  cluster_version = "1.24"
 
   cluster_endpoint_public_access = true
   vpc_id                   = local.vpc_id
   subnet_ids               = local.private_subnets_ids
   control_plane_subnet_ids = local.private_subnets_ids
-  kubeconfig_output_path = "~/.kube/"
+  # kubeconfig_output_path = "~/.kube/"
 
   # EKS Managed Node Group(s)
   eks_managed_node_group_defaults = {
