@@ -166,21 +166,6 @@ resource "kubernetes_service" "example" {
   }
 }
 
-output "cluster_id" {
-  description = "EKS cluster ID"
-  value       = module.eks.cluster_id
-}
-
-output "cluster_endpoint" {
-  description = "EKS cluster endpoint"
-  value       = module.eks.cluster_endpoint
-}
-
-output "cluster_security_group_id" {
-  description = "EKS cluster security group ID"
-  value       = module.eks.cluster_security_group_id
-}
-
 output "load_balancer_hostname" {
   value = kubernetes_service.example.status.0.load_balancer.0.ingress.0.hostname
 }
