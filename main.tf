@@ -155,6 +155,3 @@ output "connection_string" {
   value = "mongodb://admin:password@${aws_instance.mongodb.public_ip}:27017/admin"
 }
 
-output "load_balancer_hostname" {
-  value = kubernetes_service.example.status.0.load_balancer.0.ingress.0.hostname
-}
