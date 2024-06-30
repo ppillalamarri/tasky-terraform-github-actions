@@ -82,32 +82,10 @@ provider "kubernetes" {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 19.0"
-
   cluster_name    = "wiz-cluster"
-  cluster_version = "1.24"
+  cluster_version = "1.20"
 
   cluster_endpoint_public_access = true
-
-  cluster_addons = {
-    kube-proxy = {
-      most_recent = true
-    }
-    vpc-cni = {
-      most_recent              = true
-      before_compute           = true
-      service_account_role_arn = module.vpc_cni_irsa.iam_role_arn
-      configuration_values = jsonencode({
-        env = {
-          # Reference docs https://docs.aws.amazon.com/eks/latest/userguide/cni-increase-ip-addresses.html
-          ENABLE_PREFIX_DELEGATION = "true"
-          WARM_PREFIX_TARGET       = "1"
-          # MONGODB_URI = ""
-        }
-      })
-    }
-  }
-
   vpc_id                   = local.vpc_id
   subnet_ids               = local.private_subnets_ids
   control_plane_subnet_ids = local.private_subnets_ids
