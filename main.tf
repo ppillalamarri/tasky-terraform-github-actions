@@ -126,7 +126,7 @@ provider "kubernetes" {
 }
 
 # Kubernetes Deployment
-resource "kubernetes_deployment" "example" {
+resource "kubernetes_deployment" "example11" {
   metadata {
     name = "example-deployment"
     labels = {
@@ -166,7 +166,7 @@ resource "kubernetes_deployment" "example" {
 
 
 # Kubernetes Service
-resource "kubernetes_service" "example" {
+resource "kubernetes_service" "example11" {
   metadata {
     name = "example-service"
   }
