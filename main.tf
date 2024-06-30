@@ -218,26 +218,26 @@ provider "kubernetes" {
 
 }
 
-module "eks" {
-  source          = "terraform-aws-modules/eks/aws"
-  cluster_name    = "example-cluster"
-  cluster_endpoint_private_access = true
-  cluster_endpoint_public_access  = true
+#module "eks" {
+#  source          = "terraform-aws-modules/eks/aws"
+#  cluster_name    = "example-cluster"
+#  cluster_endpoint_private_access = true
+#  cluster_endpoint_public_access  = true
 #  subnets         = module.vpc.private_subnets
-  subnet_ids         = aws_subnet.example.*.id
+#  subnet_ids         = aws_subnet.example.*.id
 #  vpc_id          = module.vpc.vpc_id
-  vpc_id          = aws_vpc.example.id
-  #kubeconfig_output_path = "~/.kube/"
-  #role_arn = aws_iam_role.eks_cluster.arn
-  eks_managed_node_groups = {
-    first = {
-      desired_size = 2
-      max_size =  3
-      min_size = 1
-      instance_types = ["t3.small"]
-    }
-  }
-}
+#  vpc_id          = aws_vpc.example.id
+#  #kubeconfig_output_path = "~/.kube/"
+#  #role_arn = aws_iam_role.eks_cluster.arn
+#  eks_managed_node_groups = {
+#    first = {
+#      desired_size = 2
+#      max_size =  3
+#      min_size = 1
+#      instance_types = ["t3.small"]
+#    }
+#  }
+#}
 
 #resource "null_resource" "example"{
 #  depends_on = [module.eks]
@@ -257,54 +257,58 @@ data "aws_eks_cluster_auth" "cluster" {
 }
 
 # Retrieve EKS cluster authentication token
-#data "aws_eks_cluster_auth" "example" {
-#  name = aws_eks_cluster.example.name
-#}
-
-# Output the EKS cluster endpoint for debugging
-#output "eks_cluster_endpoint" {
-#  value = aws_eks_cluster.example.endpoint
-#}
+data "aws_eks_cluster_auth" "example" {
+  name = aws_eks_cluster.example.name
+}
+ 
+#Output the EKS cluster endpoint for debugging
+output "eks_cluster_endpoint" {
+  value = aws_eks_cluster.example.endpoint
+}
 
 # Output the Kubernetes cluster CA certificate for debugging
-#output "eks_cluster_ca_certificate" {
-#  value = aws_eks_cluster.example.certificate_authority.0.data
-#}
+output "eks_cluster_ca_certificate" {
+  value = aws_eks_cluster.example.certificate_authority.0.data
+}
 
 # EKS Cluster
-#resource "aws_eks_cluster" "example" {
-#  name     = "example-cluster"
-#  role_arn = aws_iam_role.eks_cluster.arn
+resource "aws_eks_cluster" "example" {
+  name     = "example-cluster"
+  role_arn = aws_iam_role.eks_cluster.arn
 
-#  vpc_config {
-#    subnet_ids = aws_subnet.example.*.id
-#  }
-#  node_groups = {
-#    first = {
-#      desired_capacity = 2
-#      max_capacity =  3
-#      min_capacity = 1
-#      instance_type = "t3.small"
-#    }
-#  }
-#}
-
-
+   vpc_config {
+    subnet_ids = aws_subnet.example.*.id
+    security_group_ids  = flatten(aws_vpc.security_groups_id)
+  }
+  depends_on = [
+    aws_iam_role_policy_attachment.AmazonEKSClusterPolicy
+  ]
+}
 
 # EKS Node Group
-# resource "aws_eks_node_group" "example" {
-#  cluster_name    = aws_eks_cluster.example.name
-#  node_group_name = "example-node-group"
-#  node_role_arn   = aws_iam_role.eks_node.arn
-#  subnet_ids      = aws_subnet.example.*.id
+resource "aws_eks_node_group" "example" {
+  cluster_name    = aws_eks_cluster.example.name
+  node_group_name = "example-node-group"
+  node_role_arn   = aws_iam_role.eks_node.arn
+  #subnet_ids      = aws_subnet.example.*.id
+  subnet_ids      = flatten(aws_vpc.private_subnets_id )
 
-#  scaling_config {
-#    desired_size = 2
-#    max_size     = 3
-#    min_size     = 1
-#  }
-  
-#}
+  scaling_config {
+    desired_size = 2
+    max_size     = 3
+    min_size     = 1
+  }
+  ami_type       = "AL2_x86_64"
+  instance_types = ["t3.micro"]
+  capacity_type  = "ON_DEMAND"
+  disk_size      = 20
+
+  depends_on = [
+    aws_iam_role_policy_attachment.AmazonEKSWorkerNodePolicy,
+    aws_iam_role_policy_attachment.AmazonEC2ContainerRegistryReadOnly,
+    aws_iam_role_policy_attachment.AmazonEKS_CNI_Policy
+  ]
+}
 
 
 # Kubernetes Deployment
