@@ -59,7 +59,6 @@ module "vpc" {
   }
 }
 
-
 locals {
   vpc_id              = module.vpc.vpc_id
   vpc_cidr            = module.vpc.vpc_cidr_block
@@ -68,13 +67,11 @@ locals {
   subnets_ids         = concat(local.public_subnets_ids, local.private_subnets_ids)
 }
 
-provider "kubernetes" {
-  host                   = data.aws_eks_cluster.cluster.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
-  token                  = data.aws_eks_cluster_auth.cluster.token
-}
-
-# EKS CLUSTERS
+#provider "kubernetes" {
+#  host                   = data.aws_eks_cluster.cluster.endpoint
+#  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
+#  token                  = data.aws_eks_cluster_auth.cluster.token
+#}
 
 ################
 #  EKS MODULE  #
@@ -108,14 +105,7 @@ module "eks" {
 
 }
 
-data "aws_eks_cluster" "cluster" {
-  name = module.eks.cluster_id
-}
-data "aws_eks_cluster_auth" "cluster" {
-  name = module.eks.cluster_id
-}
-
-resource "null_resource" "wiz"{
+resource "null_resource" "wiz" {
   depends_on = [module.eks]
   provisioner "local-exec" {
     command = "aws eks --region eu-west-1  update-kubeconfig --name $AWS_CLUSTER_NAME"
@@ -125,68 +115,64 @@ resource "null_resource" "wiz"{
   }
 }
 
-data "aws_iam_policy_document" "eks_assume_role_policy" {
-  statement {
-    actions = ["sts:AssumeRole"]
-
-    principals {
-      type        = "Service"
-      identifiers = ["eks.amazonaws.com"]
-    }
-  }
-}
+#data "aws_iam_policy_document" "eks_assume_role_policy" {
+#  statement {
+#    actions = ["sts:AssumeRole"]
+#
+#    principals {
+#      type        = "Service"
+#      identifiers = ["eks.amazonaws.com"]
+#    }
+#  }
+#}
 
 ################################
 #  ROLES FOR SERVICE ACCOUNTS  #
 ################################
 
-module "vpc_cni_irsa" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "~> 5.0"
-
-  role_name_prefix      = "VPC-CNI-IRSA"
-  attach_vpc_cni_policy = true
-  vpc_cni_enable_ipv4   = true
-
-  oidc_providers = {
-    main = {
-      provider_arn               = module.eks.oidc_provider_arn
-      namespace_service_accounts = ["kube-system:aws-node"]
-    }
-  }
-}
-
-
-
+#module "vpc_cni_irsa" {
+#  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+#  version = "~> 5.0"
+#
+#  role_name_prefix      = "VPC-CNI-IRSA"
+#  attach_vpc_cni_policy = true
+#  vpc_cni_enable_ipv4   = true
+#
+#  oidc_providers = {
+#    main = {
+#      provider_arn               = module.eks.oidc_provider_arn
+#      namespace_service_accounts = ["kube-system:aws-node"]
+#    }
+#  }
+#}
 
 # Create an ECR repository
 resource "aws_ecr_repository" "app_ecr_repo" {
   name = "app-repo"
 }
 
-resource "aws_ecr_lifecycle_policy" "default_policy" {
-  repository = aws_ecr_repository.app_ecr_repo.name
-	
-
-	  policy = <<EOF
-	{
-	    "rules": [
-	        {
-	            "rulePriority": 1,
-	            "description": "Keep only the last 1 untagged images.",
-	            "selection": {
-	                "tagStatus": "untagged",
-	                "countType": "imageCountMoreThan",
-	                "countNumber": 1
-	            },
-	            "action": {
-	                "type": "expire"
-	            }
-	        }
-	    ]
-	}
-	EOF
-}
+#resource "aws_ecr_lifecycle_policy" "default_policy" {
+#  repository = aws_ecr_repository.app_ecr_repo.name
+#
+#	policy = <<EOF
+#	{
+#	    "rules": [
+#	        {
+#	            "rulePriority": 1,
+#	            "description": "Keep only the last 1 untagged images.",
+#	            "selection": {
+#	                "tagStatus": "untagged",
+#	                "countType": "imageCountMoreThan",
+#	                "countNumber": 1
+#	            },
+#	            "action": {
+#	                "type": "expire"
+#	            }
+#	        }
+#	    ]
+#	}
+#	EOF
+#}
 
 # Provision the Kubernetes cluster
 # resource "null_resource" "provision_cluster" {
@@ -260,20 +246,20 @@ resource "kubernetes_service" "tasky-webapp-svc" {
 }
 
 
-resource "aws_iam_role" "eks_role" {
-  name               = "eks-cluster-role"
-  assume_role_policy = data.aws_iam_policy_document.eks_assume_role_policy.json
-}
+#resource "aws_iam_role" "eks_role" {
+#  name               = "eks-cluster-role"
+#  assume_role_policy = data.aws_iam_policy_document.eks_assume_role_policy.json
+#}
 
-resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-  role       = aws_iam_role.eks_role.name
-}
+#resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
+#  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+#  role       = aws_iam_role.eks_role.name
+#}
 
-resource "aws_iam_role_policy_attachment" "eks_service_policy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
-  role       = aws_iam_role.eks_role.name
-}
+#resource "aws_iam_role_policy_attachment" "eks_service_policy" {
+#  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
+#  role       = aws_iam_role.eks_role.name
+#}
 
 output "cluster_id" {
   description = "EKS cluster ID"
