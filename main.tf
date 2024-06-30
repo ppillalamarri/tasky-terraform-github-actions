@@ -278,10 +278,10 @@ resource "aws_eks_cluster" "example" {
 
    vpc_config {
     subnet_ids = aws_subnet.example.*.id
-    security_group_ids  = flatten(aws_vpc.security_groups_id)
+    #security_group_ids  = flatten(aws_vpc.security_groups_id)
   }
   depends_on = [
-    aws_iam_role_policy_attachment.AmazonEKSClusterPolicy
+    aws_iam_role_policy_attachment.eks_cluster_AmazonEKSClusterPolicy
   ]
 }
 
