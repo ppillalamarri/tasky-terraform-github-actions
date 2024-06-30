@@ -50,11 +50,11 @@ module "vpc" {
   enable_vpn_gateway = true
 
   public_subnet_tags = {
-    "kubernetes.io/cluster/wiz1-cluster" = "shared"
+    "kubernetes.io/cluster/wiz2-cluster" = "shared"
     "kubernetes.io/role/elb" = 1
   }
   private_subnet_tags = {
-    "kubernetes.io/cluster/wiz1-cluster" = "shared"
+    "kubernetes.io/cluster/wiz2-cluster" = "shared"
     "kubernetes.io/role/internal-elb" = "1"
   }
 }
@@ -79,14 +79,14 @@ locals {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  cluster_name    = "wiz1-cluster"
+  cluster_name    = "wiz2-cluster"
   cluster_version = "1.24"
 
   cluster_endpoint_public_access = true
   vpc_id                   = local.vpc_id
   subnet_ids               = local.private_subnets_ids
   control_plane_subnet_ids = local.private_subnets_ids
-  # kubeconfig_output_path = "~/.kube/"
+  kubeconfig_output_path = "~/.kube/"
 
   # EKS Managed Node Group(s)
   eks_managed_node_group_defaults = {
@@ -110,7 +110,7 @@ resource "null_resource" "wiz" {
   provisioner "local-exec" {
     command = "aws eks --region eu-west-1  update-kubeconfig --name $AWS_CLUSTER_NAME"
     environment = {
-      AWS_CLUSTER_NAME = "wiz1-cluster"
+      AWS_CLUSTER_NAME = "wiz2-cluster"
     }
   }
 }
