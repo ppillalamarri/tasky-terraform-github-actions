@@ -1,7 +1,6 @@
 #Create an EKS cluster instance in the same VPC as your database server
 #Ensure your built container image contains an arbitrary file called wizexercise.txt with some content
 
-
 #Build and host a container image for your web application
 
 #Deploy your container-based web application to the EKS cluster
@@ -39,7 +38,7 @@ module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
   version = "4.0.0"
 
-  name = "stw-vpc"
+  name = "wiz-vpc"
   cidr = "10.0.0.0/16"
 
   azs             = data.aws_availability_zones.available.names
@@ -48,8 +47,16 @@ module "vpc" {
 
   enable_nat_gateway = true
   single_nat_gateway = true
-  enable_vpn_gateway = false
+  enable_vpn_gateway = true
 
+  public_subnet_tags = {
+    "kubernetes.io/cluster/wiz-cluster" = "shared"
+    "kubernetes.io/role/elb" = 1
+  }
+  private_subnet_tags = {
+    "kubernetes.io/cluster/wiz-cluster" = "shared"
+    "kubernetes.io/role/internal-elb" = "1"
+  }
 }
 
 
@@ -59,6 +66,12 @@ locals {
   public_subnets_ids  = module.vpc.public_subnets
   private_subnets_ids = module.vpc.private_subnets
   subnets_ids         = concat(local.public_subnets_ids, local.private_subnets_ids)
+}
+
+provider "kubernetes" {
+  host                   = data.aws_eks_cluster.cluster.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
+  token                  = data.aws_eks_cluster_auth.cluster.token
 }
 
 # EKS CLUSTERS
@@ -71,7 +84,7 @@ module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 19.0"
 
-  cluster_name    = "stw-cluster"
+  cluster_name    = "wiz-cluster"
   cluster_version = "1.24"
 
   cluster_endpoint_public_access = true
@@ -89,6 +102,7 @@ module "eks" {
           # Reference docs https://docs.aws.amazon.com/eks/latest/userguide/cni-increase-ip-addresses.html
           ENABLE_PREFIX_DELEGATION = "true"
           WARM_PREFIX_TARGET       = "1"
+          # MONGODB_URI = ""
         }
       })
     }
@@ -97,6 +111,7 @@ module "eks" {
   vpc_id                   = local.vpc_id
   subnet_ids               = local.private_subnets_ids
   control_plane_subnet_ids = local.private_subnets_ids
+  kubeconfig_output_path = "~/.kube/"
 
   # EKS Managed Node Group(s)
   eks_managed_node_group_defaults = {
@@ -106,7 +121,7 @@ module "eks" {
   }
 
   eks_managed_node_groups = {
-    stw_node_wg = {
+    wiz_node_wg = {
       min_size     = 1
       max_size     = 3
       desired_size = 2
@@ -115,7 +130,22 @@ module "eks" {
 
 }
 
+data "aws_eks_cluster" "cluster" {
+  name = module.eks.cluster_id
+}
+data "aws_eks_cluster_auth" "cluster" {
+  name = module.eks.cluster_id
+}
 
+resource "null_resource" "wiz"{
+  depends_on = [module.eks]
+  provisioner "local-exec" {
+    command = "aws eks --region eu-west-1  update-kubeconfig --name $AWS_CLUSTER_NAME"
+    environment = {
+      AWS_CLUSTER_NAME = "wiz-cluster"
+    }
+  }
+}
 
 data "aws_iam_policy_document" "eks_assume_role_policy" {
   statement {
@@ -148,6 +178,9 @@ module "vpc_cni_irsa" {
   }
 }
 
+
+
+
 # Create an ECR repository
 resource "aws_ecr_repository" "app_ecr_repo" {
   name = "app-repo"
@@ -178,18 +211,18 @@ resource "aws_ecr_lifecycle_policy" "default_policy" {
 }
 
 # Provision the Kubernetes cluster
-resource "null_resource" "provision_cluster" {
-  provisioner "local-exec" {
-     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-     chmod +x kubectl
-     mv kubectl /usr/local/bin/
-  }
-}
+# resource "null_resource" "provision_cluster" {
+#   provisioner "local-exec" {
+#      curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+#      chmod +x kubectl
+#      mv kubectl /usr/local/bin/
+#   }
+# }
 
-provider "kubernetes" {
-  config_path    = "~/.kube/config"
-  config_context = "aws"
-}
+# provider "kubernetes" {
+#   config_path    = "~/.kube/config"
+#   config_context = "aws"
+# }
 
 resource "kubernetes_deployment" "tasky-webapp" {
   metadata {
@@ -229,9 +262,9 @@ resource "kubernetes_deployment" "tasky-webapp" {
   }
 }
 
-resource "kubernetes_service" "tasky-webapp" {
+resource "kubernetes_service" "tasky-webapp-svc" {
   metadata {
-    name = "tasky-webapp"
+    name = "tasky-webapp-svc"
   }
 
   spec {
@@ -240,8 +273,8 @@ resource "kubernetes_service" "tasky-webapp" {
     }
 
     port {
-      port        = 8081
-      target_port = 80
+      port        = 80
+      target_port = 8081
     }
 
     type = "LoadBalancer"
@@ -277,4 +310,8 @@ output "cluster_endpoint" {
 output "cluster_security_group_id" {
   description = "EKS cluster security group ID"
   value       = module.eks.cluster_security_group_id
+}
+
+output "load_balancer_hostname" {
+  value = kubernetes_service.java.status.0.load_balancer.0.ingress.0.hostname
 }
