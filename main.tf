@@ -187,5 +187,5 @@ resource "kubernetes_service" "example" {
 }
 
 output "load_balancer_hostname" {
-  value = kubernetes_service.example11.status.0.load_balancer.0.ingress.0.hostname
+  value = kubernetes_service.example.status.0.load_balancer.0.ingress.0.hostname
 }
