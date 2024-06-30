@@ -148,6 +148,7 @@ resource "kubernetes_deployment" "example" {
   }
 }
 
+
 # Kubernetes Service
 resource "kubernetes_service" "example" {
   metadata {
