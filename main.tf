@@ -157,7 +157,7 @@ resource "kubernetes_deployment" "example" {
           name  = "example-container"
 
           port {
-            container_port = 8080
+            container_port = 80
           }
         }
       }
