@@ -249,13 +249,6 @@ provider "kubernetes" {
 #  }
 #}
 
-data "aws_eks_cluster" "example" {
-  name = module.eks.cluster_id
-}
-data "aws_eks_cluster_auth" "cluster" {
-  name = module.eks.cluster_id
-}
-
 # Retrieve EKS cluster authentication token
 data "aws_eks_cluster_auth" "example" {
   name = aws_eks_cluster.example.name
@@ -290,8 +283,8 @@ resource "aws_eks_node_group" "example" {
   cluster_name    = aws_eks_cluster.example.name
   node_group_name = "example-node-group"
   node_role_arn   = aws_iam_role.eks_node.arn
-  #subnet_ids      = aws_subnet.example.*.id
-  subnet_ids      = flatten(aws_vpc.private_subnets_id )
+  subnet_ids      = aws_subnet.example.*.id
+  #subnet_ids      = flatten(aws_vpc.private_subnets_id )
 
   scaling_config {
     desired_size = 2
@@ -304,9 +297,9 @@ resource "aws_eks_node_group" "example" {
   disk_size      = 20
 
   depends_on = [
-    aws_iam_role_policy_attachment.AmazonEKSWorkerNodePolicy,
-    aws_iam_role_policy_attachment.AmazonEC2ContainerRegistryReadOnly,
-    aws_iam_role_policy_attachment.AmazonEKS_CNI_Policy
+    aws_iam_role_policy_attachment.eks_node_AmazonEKSWorkerNodePolicy,
+    aws_iam_role_policy_attachment.eks_node_AmazonEC2ContainerRegistryReadOnly,
+    aws_iam_role_policy_attachment.eks_node_AmazonEKS_CNI_Policy
   ]
 }
 
