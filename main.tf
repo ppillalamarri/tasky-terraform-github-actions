@@ -80,7 +80,7 @@ locals {
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   cluster_name    = "wiz2-cluster"
-  cluster_version = "1.24"
+  cluster_version = "1.20"
 
   cluster_endpoint_public_access = true
   vpc_id                   = local.vpc_id
