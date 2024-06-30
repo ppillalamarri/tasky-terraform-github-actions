@@ -1,69 +1,11 @@
 # Initialize AWS Provider
 provider "aws" {
   region = "us-east-1"
-  access_key = "AKIARATHADOVEYTEQYWI"
-  secret_key = "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"
-}
-
-# IAM Role for EKS Cluster
-resource "aws_iam_role" "eks_cluster" {
-  name = "eks-cluster-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
-      Principal = {
-        Service = "eks.amazonaws.com"
-      }
-    }]
-  })
-}
-
-# Attach Policies to EKS Cluster Role
-resource "aws_iam_role_policy_attachment" "eks_cluster_AmazonEKSClusterPolicy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-  role       = aws_iam_role.eks_cluster.name
-}
-
-
-# IAM Role for EKS Node Group
-resource "aws_iam_role" "eks_node" {
-  name = "eks-node-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
-      Principal = {
-        Service = "ec2.amazonaws.com"
-      }
-    }]
-  })
-}
-
-# Attach Policies to EKS Node Role
-resource "aws_iam_role_policy_attachment" "eks_node_AmazonEKSWorkerNodePolicy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-  role       = aws_iam_role.eks_node.name
-}
-
-resource "aws_iam_role_policy_attachment" "eks_node_AmazonEC2ContainerRegistryReadOnly" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-  role       = aws_iam_role.eks_node.name
-}
-
-resource "aws_iam_role_policy_attachment" "eks_node_AmazonEKS_CNI_Policy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-  role       = aws_iam_role.eks_node.name
 }
 
 # VPC and Subnets
 resource "aws_subnet" "example" {
   count = 3
-
   vpc_id            = aws_vpc.example.id
   cidr_block        = cidrsubnet(aws_vpc.example.cidr_block, 8, count.index)
   availability_zone = element(["us-east-1a", "us-east-1b", "us-east-1c"], count.index)
@@ -79,8 +21,6 @@ resource "aws_vpc" "example" {
 #Outputs the instance IP and MongoDB connection string.
 
 # Configure a security group to allow SSH to the VM from the public internet
-
-
 # Define a security group for SSH access
 resource "aws_security_group" "ssh" {
   name        = "ssh_security_group"
@@ -208,164 +148,6 @@ resource "aws_instance" "mongodb" {
   tags = {
     Name = "MongoDBServer"
   }
-}
-
-# Kubernetes Provider
-provider "kubernetes" {
-  host                   = aws_eks_cluster.example.endpoint
-  cluster_ca_certificate = base64decode(aws_eks_cluster.example.certificate_authority.0.data)
-  token                  = data.aws_eks_cluster_auth.example.token
-
-}
-
-#module "eks" {
-#  source          = "terraform-aws-modules/eks/aws"
-#  cluster_name    = "example-cluster"
-#  cluster_endpoint_private_access = true
-#  cluster_endpoint_public_access  = true
-#  subnets         = module.vpc.private_subnets
-#  subnet_ids         = aws_subnet.example.*.id
-#  vpc_id          = module.vpc.vpc_id
-#  vpc_id          = aws_vpc.example.id
-#  #kubeconfig_output_path = "~/.kube/"
-#  #role_arn = aws_iam_role.eks_cluster.arn
-#  eks_managed_node_groups = {
-#    first = {
-#      desired_size = 2
-#      max_size =  3
-#      min_size = 1
-#      instance_types = ["t3.small"]
-#    }
-#  }
-#}
-
-#resource "null_resource" "example"{
-#  depends_on = [module.eks]
-#  provisioner "local-exec" {
-#    command = "aws eks --region us-east-1  update-kubeconfig --name $AWS_CLUSTER_NAME"
-#    environment = {
-#      AWS_CLUSTER_NAME = "example-cluster"
-#    }
-#  }
-#}
-
-# Retrieve EKS cluster authentication token
-data "aws_eks_cluster_auth" "example" {
-  name = aws_eks_cluster.example.name
-}
- 
-#Output the EKS cluster endpoint for debugging
-output "eks_cluster_endpoint" {
-  value = aws_eks_cluster.example.endpoint
-}
-
-# Output the Kubernetes cluster CA certificate for debugging
-output "eks_cluster_ca_certificate" {
-  value = aws_eks_cluster.example.certificate_authority.0.data
-}
-
-# EKS Cluster
-resource "aws_eks_cluster" "example" {
-  name     = "example-cluster"
-  role_arn = aws_iam_role.eks_cluster.arn
-
-   vpc_config {
-    subnet_ids = aws_subnet.example.*.id
-    #security_group_ids  = flatten(aws_vpc.security_groups_id)
-  }
-  depends_on = [
-    aws_iam_role_policy_attachment.eks_cluster_AmazonEKSClusterPolicy
-  ]
-}
-
-# EKS Node Group
-resource "aws_eks_node_group" "example" {
-  cluster_name    = aws_eks_cluster.example.name
-  node_group_name = "example-node-group"
-  node_role_arn   = aws_iam_role.eks_node.arn
-  subnet_ids      = aws_subnet.example.*.id
-  #subnet_ids      = flatten(aws_vpc.private_subnets_id )
-
-  scaling_config {
-    desired_size = 2
-    max_size     = 3
-    min_size     = 1
-  }
-  ami_type       = "AL2_x86_64"
-  instance_types = ["t3.micro"]
-  capacity_type  = "ON_DEMAND"
-  disk_size      = 20
-
-  depends_on = [
-    aws_iam_role_policy_attachment.eks_node_AmazonEKSWorkerNodePolicy,
-    aws_iam_role_policy_attachment.eks_node_AmazonEC2ContainerRegistryReadOnly,
-    aws_iam_role_policy_attachment.eks_node_AmazonEKS_CNI_Policy
-  ]
-}
-
-
-# Kubernetes Deployment
-resource "kubernetes_deployment" "example" {
-  metadata {
-    name = "example-deployment"
-    labels = {
-      app = "example-app"
-    }
-  }
-
-  spec {
-    replicas = 1
-
-    selector {
-      match_labels = {
-        app = "example-app"
-      }
-    }
-
-    template {
-      metadata {
-        labels = {
-          app = "example-app"
-        }
-      }
-
-      spec {
-        container {
-          image = "070009232298.dkr.ecr.eu-west-1.amazonaws.com/app-repo_taskywebapp:latest"
-          name  = "example-container"
-
-          port {
-            container_port = 80
-          }
-        }
-      }
-    }
-  }
-}
-
-
-# Kubernetes Service
-resource "kubernetes_service" "example" {
-  metadata {
-    name = "example-service"
-  }
-
-  spec {
-    selector = {
-      app = "example-app"
-    }
-
-    port {
-      port        = 80
-      target_port = 8080
-    }
-
-    type = "LoadBalancer"
-  }
-}
-
-output "instance_ip" {
-  value = aws_instance.mongodb.public_ip
 }
 
 output "connection_string" {
