@@ -9,6 +9,7 @@
 #TODO Configure your EKS cluster to grant cluster-admin privileges to your web application container(s)
 #TODO Allow public internet traffic to your web application using service type loadbalancer
 
+
 terraform {
   required_providers {
     aws = {
@@ -49,11 +50,11 @@ module "vpc" {
   enable_vpn_gateway = true
 
   public_subnet_tags = {
-    "kubernetes.io/cluster/wiz-cluster" = "shared"
+    "kubernetes.io/cluster/wiz1-cluster" = "shared"
     "kubernetes.io/role/elb" = 1
   }
   private_subnet_tags = {
-    "kubernetes.io/cluster/wiz-cluster" = "shared"
+    "kubernetes.io/cluster/wiz1-cluster" = "shared"
     "kubernetes.io/role/internal-elb" = "1"
   }
 }
@@ -78,7 +79,7 @@ locals {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  cluster_name    = "wiz-cluster"
+  cluster_name    = "wiz1-cluster"
   cluster_version = "1.24"
 
   cluster_endpoint_public_access = true
@@ -109,7 +110,7 @@ resource "null_resource" "wiz" {
   provisioner "local-exec" {
     command = "aws eks --region eu-west-1  update-kubeconfig --name $AWS_CLUSTER_NAME"
     environment = {
-      AWS_CLUSTER_NAME = "wiz-cluster"
+      AWS_CLUSTER_NAME = "wiz1-cluster"
     }
   }
 }
