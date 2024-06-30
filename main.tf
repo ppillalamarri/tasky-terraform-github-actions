@@ -268,14 +268,14 @@ module "eks" {
   vpc_id          = aws_vpc.example.id
   #kubeconfig_output_path = "~/.kube/"
   #role_arn = aws_iam_role.eks_cluster.arn
-  #node_groups = {
-  #  first = {
-  #    desired_capacity = 2
-  #    max_capacity =  3
-  #    min_capacity = 1
-  #    instanace_type = "t3.small"
-  #  }
-  #}
+  node_groups = {
+    first = {
+      desired_capacity = 2
+      max_capacity =  3
+      min_capacity = 1
+      instance_type = "t3.small"
+    }
+  }
 }
 
 resource "null_resource" "example"{
