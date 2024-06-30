@@ -228,7 +228,7 @@ module "eks" {
 #  vpc_id          = module.vpc.vpc_id
   vpc_id          = aws_vpc.example.id
   #kubeconfig_output_path = "~/.kube/"
-  role_arn = aws_iam_role.eks_cluster.arn
+  #role_arn = aws_iam_role.eks_cluster.arn
   eks_managed_node_groups = {
     first = {
       desired_size = 2
