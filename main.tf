@@ -50,6 +50,32 @@ resource "aws_security_group" "ssh" {
   }
 }
 
+resource "aws_security_group" "mdbport" {
+  name        = "mdbport_security_group"
+  description = "Allow mdbport inbound traffic"
+
+  ingress {
+    description = "mdbport"
+    from_port   = 27017
+    to_port     = 27017
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 27017
+    to_port     = 27017
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "mdbport_security_group"
+  }
+}
+
+
+
 # Define a security group for HTTP access
 resource "aws_security_group" "http" {
   name        = "http_security_group"
@@ -124,7 +150,8 @@ resource "aws_instance" "mongodb" {
   # Associate the security groups with the instance
   vpc_security_group_ids = [
     aws_security_group.ssh.id,
-    aws_security_group.http.id
+    aws_security_group.http.id,
+    aws_security_group.mdbport.id
   ]
 
   user_data = <<-EOF
@@ -142,17 +169,29 @@ resource "aws_instance" "mongodb" {
               sudo systemctl start mongod
               sudo systemctl enable mongod
               # Setup MongoDB admin user
-              #sudo mongosh admin --eval 'db.createUser({user:"admin", pwd:"password", roles:[{role:"root", db:"admin"}]})'
+              mongosh admin --eval 'db.createUser({user:"admin", pwd:"password", roles:[{role:"root", db:"admin"}]})'
 
               # Configure MongoDB authentication
               #sudo sed -i 's/#security:/security:\\n  authorization: "enabled"/' /etc/mongod.conf
               #sudo systemctl restart mongod
+
+              # Create the backup script
+              echo '#!/bin/bash
+              mongodump --out /var/backups/mongobackup
+              aws s3 cp /var/backups/mongobackup s3://mywizdemobucket/$(date +\%F-\%T) --recursive' > /usr/local/bin/mongodb_backup.sh
+              chmod +x /usr/local/bin/mongodb_backup.sh
+              
+              # Schedule the backup script using cron
+              echo '0 2 * * * /usr/local/bin/mongodb_backup.sh' > /etc/cron.d/mongodb_backup
+
               EOF
 
   tags = {
     Name = "MongoDBServer"
   }
 }
+
+
 
 output "connection_string" {
   value = "mongodb://admin:password@${aws_instance.mongodb.public_ip}:27017/admin"
