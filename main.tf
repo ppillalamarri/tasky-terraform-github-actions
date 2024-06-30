@@ -171,8 +171,8 @@ resource "kubernetes_service" "example" {
     }
 
     port {
-      port        = 80
-      target_port = 8080
+      port        = 8080
+      target_port = 80
     }
 
     type = "LoadBalancer"
