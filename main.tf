@@ -221,31 +221,33 @@ provider "kubernetes" {
 module "eks" {
   source          = "terraform-aws-modules/eks/aws"
   cluster_name    = "example-cluster"
+  cluster_endpoint_private_access = true
+  cluster_endpoint_public_access  = true
 #  subnets         = module.vpc.private_subnets
-  subnets         = aws_subnet.example.*.id
+  subnet_ids         = aws_subnet.example.*.id
 #  vpc_id          = module.vpc.vpc_id
   vpc_id          = aws_vpc.example.id
-  kubeconfig_output_path = "~/.kube/"
+  #kubeconfig_output_path = "~/.kube/"
   role_arn = aws_iam_role.eks_cluster.arn
-  node_groups = {
+  eks_managed_node_groups = {
     first = {
-      desired_capacity = 2
-      max_capacity =  3
-      min_capacity = 1
-      instance_type = "t3.small"
+      desired_size = 2
+      max_size =  3
+      min_size = 1
+      instance_types = ["t3.small"]
     }
   }
 }
 
-resource "null_resource" "example"{
-  depends_on = [module.eks]
-  provisioner "local-exec" {
-    command = "aws eks --region us-east-1  update-kubeconfig --name $AWS_CLUSTER_NAME"
-    environment = {
-      AWS_CLUSTER_NAME = "example-cluster"
-    }
-  }
-}
+#resource "null_resource" "example"{
+#  depends_on = [module.eks]
+#  provisioner "local-exec" {
+#    command = "aws eks --region us-east-1  update-kubeconfig --name $AWS_CLUSTER_NAME"
+#    environment = {
+#      AWS_CLUSTER_NAME = "example-cluster"
+#    }
+#  }
+#}
 
 data "aws_eks_cluster" "example" {
   name = module.eks.cluster_id
