@@ -132,7 +132,7 @@ resource "kubernetes_deployment" "example" {
           name  = "example-container"
 
           port {
-            container_port = 80
+            container_port = 8081
           }
         }
       }
@@ -153,7 +153,7 @@ resource "kubernetes_service" "example" {
 
     port {
       port        = 80
-      target_port = 80
+      target_port = 8081
     }
 
     type = "LoadBalancer"
