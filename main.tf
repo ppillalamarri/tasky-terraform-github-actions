@@ -114,36 +114,36 @@ resource "null_resource" "wiz" {
   }
 }
 
-#data "aws_iam_policy_document" "eks_assume_role_policy" {
-#  statement {
-#    actions = ["sts:AssumeRole"]
-#
-#    principals {
-#      type        = "Service"
-#      identifiers = ["eks.amazonaws.com"]
-#    }
-#  }
-#}
+data "aws_iam_policy_document" "eks_assume_role_policy" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["eks.amazonaws.com"]
+    }
+  }
+}
 
 ################################
 #  ROLES FOR SERVICE ACCOUNTS  #
 ################################
 
-#module "vpc_cni_irsa" {
-#  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-#  version = "~> 5.0"
-#
-#  role_name_prefix      = "VPC-CNI-IRSA"
-#  attach_vpc_cni_policy = true
-#  vpc_cni_enable_ipv4   = true
-#
-#  oidc_providers = {
-#    main = {
-#      provider_arn               = module.eks.oidc_provider_arn
-#      namespace_service_accounts = ["kube-system:aws-node"]
-#    }
-#  }
-#}
+module "vpc_cni_irsa" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version = "~> 5.0"
+
+  role_name_prefix      = "VPC-CNI-IRSA"
+  attach_vpc_cni_policy = true
+  vpc_cni_enable_ipv4   = true
+
+  oidc_providers = {
+    main = {
+      provider_arn               = module.eks.oidc_provider_arn
+      namespace_service_accounts = ["kube-system:aws-node"]
+    }
+  }
+}
 
 # Create an ECR repository
 resource "aws_ecr_repository" "app_ecr_repo" {
@@ -244,21 +244,20 @@ resource "kubernetes_service" "tasky-webapp-svc" {
   }
 }
 
+resource "aws_iam_role" "eks_role" {
+  name               = "eks-cluster-role"
+  assume_role_policy = data.aws_iam_policy_document.eks_assume_role_policy.json
+}
 
-#resource "aws_iam_role" "eks_role" {
-#  name               = "eks-cluster-role"
-#  assume_role_policy = data.aws_iam_policy_document.eks_assume_role_policy.json
-#}
+resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+  role       = aws_iam_role.eks_role.name
+}
 
-#resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
-#  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-#  role       = aws_iam_role.eks_role.name
-#}
-
-#resource "aws_iam_role_policy_attachment" "eks_service_policy" {
-#  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
-#  role       = aws_iam_role.eks_role.name
-#}
+resource "aws_iam_role_policy_attachment" "eks_service_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
+  role       = aws_iam_role.eks_role.name
+}
 
 output "cluster_id" {
   description = "EKS cluster ID"
