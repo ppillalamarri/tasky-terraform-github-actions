@@ -88,11 +88,16 @@ resource "aws_subnet" "example" {
 
   vpc_id            = aws_vpc.example.id
   cidr_block        = cidrsubnet(aws_vpc.example.cidr_block, 8, count.index)
-  availability_zone = element(["us-west-1a", "us-west-1b", "us-west-1c"], count.index)
+  availability_zone = element(["eu-west-1a", "eu-west-1b", "eu-west-1c"], count.index)
 }
 
 resource "aws_vpc" "example" {
   cidr_block = "10.0.0.0/16"
+}
+
+# Retrieve EKS cluster authentication token
+data "aws_eks_cluster_auth" "example" {
+  name = aws_eks_cluster.example.name
 }
 
 # Kubernetes Provider
