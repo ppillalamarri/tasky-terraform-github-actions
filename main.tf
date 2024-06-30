@@ -1,6 +1,8 @@
 # Initialize AWS Provider
 provider "aws" {
-  region = "eu-west-1"
+  region = "us-east-1"
+  access_key = "AKIARATHADOVEYTEQYWI"
+  secret_key = "uuIl8NxNJAFVu7/VXLYKH0zmhrFXoRn9APXB8I6r"
 }
 
 # EKS Cluster
@@ -88,7 +90,7 @@ resource "aws_subnet" "example" {
 
   vpc_id            = aws_vpc.example.id
   cidr_block        = cidrsubnet(aws_vpc.example.cidr_block, 8, count.index)
-  availability_zone = element(["eu-west-1a", "eu-west-1b", "eu-west-1c"], count.index)
+  availability_zone = element(["us-east-1a", "us-east-1b", "us-east-1c"], count.index)
 }
 
 resource "aws_vpc" "example" {
@@ -134,11 +136,11 @@ resource "kubernetes_deployment" "example" {
 
       spec {
         container {
-          image = "070009232298.dkr.ecr.eu-west-1.amazonaws.com/tasky_webapp:latest"
+          image = "070009232298.dkr.ecr.eu-west-1.amazonaws.com/app-repo_taskywebapp:latest"
           name  = "example-container"
 
           port {
-            container_port = 8081
+            container_port = 8080
           }
         }
       }
@@ -159,7 +161,7 @@ resource "kubernetes_service" "example" {
 
     port {
       port        = 80
-      target_port = 8081
+      target_port = 8080
     }
 
     type = "LoadBalancer"
