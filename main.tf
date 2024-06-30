@@ -128,7 +128,7 @@ provider "kubernetes" {
 # Kubernetes Deployment
 resource "kubernetes_deployment" "example11" {
   metadata {
-    name = "example-deployment"
+    name = "example11-deployment"
     labels = {
       app = "example-app"
     }
@@ -168,7 +168,7 @@ resource "kubernetes_deployment" "example11" {
 # Kubernetes Service
 resource "kubernetes_service" "example11" {
   metadata {
-    name = "example-service"
+    name = "example11-service"
   }
 
   spec {
