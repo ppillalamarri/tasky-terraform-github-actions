@@ -117,7 +117,7 @@ resource "aws_iam_instance_profile" "ec2_instance_profile" {
 
 resource "aws_instance" "mongodb" {
   #ami                    = "ami-08ba52a61087f1bd6"  # Choose an appropriate Amazon Linux 2 AMI
-  ami = "ami-0bb323ae9abcae1a0" # amzn2-ami-kernel-5.10-hvm-2.0.20240620.0-x86_64-gp2  
+  ami = "ami-0195204d5dce06d99" # amzn2-ami-kernel-5.10-hvm-2.0.20240620.0-x86_64-gp2  
   instance_type         = "t2.micro"
   key_name              = var.key_name
 
