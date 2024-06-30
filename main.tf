@@ -156,7 +156,7 @@ resource "kubernetes_deployment" "example11" {
           name  = "example-container"
 
           port {
-            container_port = 80
+            container_port = 8080
           }
         }
       }
@@ -178,7 +178,7 @@ resource "kubernetes_service" "example11" {
 
     port {
       port        = 80
-      target_port = 80
+      target_port = 8080
     }
 
     type = "LoadBalancer"
@@ -186,5 +186,5 @@ resource "kubernetes_service" "example11" {
 }
 
 output "load_balancer_hostname" {
-  value = kubernetes_service.example.status.0.load_balancer.0.ingress.0.hostname
+  value = kubernetes_service.example11.status.0.load_balancer.0.ingress.0.hostname
 }
