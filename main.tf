@@ -5,6 +5,7 @@ provider "aws" {
   secret_key = "uuIl8NxNJAFVu7/VXLYKH0zmhrFXoRn9APXB8I6r"
 }
 
+
 # EKS Cluster
 resource "aws_eks_cluster" "example" {
   name     = "example-cluster"
