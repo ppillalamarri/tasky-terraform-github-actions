@@ -102,6 +102,16 @@ data "aws_eks_cluster_auth" "example" {
   name = aws_eks_cluster.example.name
 }
 
+# Output the EKS cluster endpoint for debugging
+output "eks_cluster_endpoint" {
+  value = aws_eks_cluster.example.endpoint
+}
+
+# Output the Kubernetes cluster CA certificate for debugging
+output "eks_cluster_ca_certificate" {
+  value = aws_eks_cluster.example.certificate_authority.0.data
+}
+
 # Kubernetes Provider
 provider "kubernetes" {
   host                   = aws_eks_cluster.example.endpoint
