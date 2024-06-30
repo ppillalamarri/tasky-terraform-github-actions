@@ -3,6 +3,7 @@ provider "aws" {
   region = "us-east-1"
 }
 
+
 # VPC and Subnets
 resource "aws_subnet" "example" {
   count = 3
