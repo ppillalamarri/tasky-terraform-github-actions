@@ -176,8 +176,11 @@ resource "aws_instance" "mongodb" {
               #sudo systemctl restart mongod
 
               # Create the backup script
+              sudo touch /usr/local/bin/mongodb_backup.sh
+              sudo chmod 777 /usr/local/bin/mongodb_backup.sh
               echo '#!/bin/bash
-              mongodump --out /var/backups/mongobackup
+              sudo mkdir -p /var/backups/mongobackup
+              sudo mongodump --out /var/backups/mongobackup
               aws s3 cp /var/backups/mongobackup s3://mywizdemobucket/$(date +\%F-\%T) --recursive' > /usr/local/bin/mongodb_backup.sh
               chmod +x /usr/local/bin/mongodb_backup.sh
               
