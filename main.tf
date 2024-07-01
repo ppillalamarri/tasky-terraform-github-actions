@@ -185,6 +185,8 @@ resource "aws_instance" "mongodb" {
               chmod +x /usr/local/bin/mongodb_backup.sh
               
               # Schedule the backup script using cron
+              sudo touch /etc/cron.d/mongodb_backup
+              chmod 777 /etc/cron.d/mongodb_backup
               echo '0 2 * * * /usr/local/bin/mongodb_backup.sh' > /etc/cron.d/mongodb_backup
 
               EOF
