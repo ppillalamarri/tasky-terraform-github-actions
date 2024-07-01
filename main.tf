@@ -60,6 +60,8 @@ resource "aws_security_group" "mdbport" {
     to_port     = 27017
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+    #restrict mongodb  traffic to originate only from your VPC
+    #cidr_blocks = [aws_vpc.example.cidr_block]
   }
 
   egress {
